@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# --- 1) Redireciona URLs com .html para a versão limpa (sem extensão) ---
+
+# /index.html -> /
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\s/index\.html[\s?] [NC]
+RewriteRule ^index\.html$ / [R=301,L]
+
+# /qualquer-pagina.html -> /qualquer-pagina (inclui /servicos/algo.html -> /servicos/algo)
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\s/([^.\s]+)\.html[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# --- 2) /servicos e /servicos/ servem servicos.html (existe também a pasta servicos/) ---
+RewriteRule ^servicos/?$ servicos.html [L]
+
+# --- 3) Serve o arquivo .html real por trás da URL limpa, sem mudar o que aparece no navegador ---
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+)$ $1.html [NC,L]
