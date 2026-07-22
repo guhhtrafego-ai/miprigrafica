@@ -603,6 +603,35 @@ p{ margin: 0 0 16px; }
   font-weight: 600;
 }
 
+.shop-search{ margin-bottom: 20px; }
+.shop-search input[type="search"]{
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--gray-100);
+  background: var(--gray-50);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--teal-darker);
+  transition: background var(--transition), border-color var(--transition);
+}
+.shop-search input[type="search"]::placeholder{ color: var(--gray-500); }
+.shop-search input[type="search"]:focus{
+  outline: none;
+  background: var(--white);
+  border-color: var(--teal-accent);
+}
+.no-results-message{
+  grid-column: 1 / -1;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}
+
 /* Catálogo de produtos (estilo e-commerce) */
 .product-grid{
   display: grid;

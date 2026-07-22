@@ -249,23 +249,57 @@
     });
   }
 
-  /* ---------- Filtro de categorias no catálogo da Home ---------- */
-  var homeFilter = document.getElementById("homeCategoryFilter");
-  var homeGrid = document.getElementById("homeProductGrid");
-  if (homeFilter && homeGrid) {
-    var filterBtns = Array.prototype.slice.call(homeFilter.querySelectorAll("[data-filter]"));
-    var homeCards = Array.prototype.slice.call(homeGrid.querySelectorAll(".product-card"));
-    filterBtns.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        filterBtns.forEach(function (b) { b.classList.remove("active"); });
-        btn.classList.add("active");
-        var filter = btn.getAttribute("data-filter");
-        homeCards.forEach(function (card) {
-          var show = filter === "todos" || card.getAttribute("data-category") === filter;
-          card.style.display = show ? "" : "none";
+  /* ---------- Catálogo: filtro de categoria + busca por texto ---------- */
+  // homeCategoryFilter só existe no catálogo combinado (Home e /servicos);
+  // productSearch existe ali e também em cada subpágina de categoria (buscando
+  // só dentro dos produtos daquela página). As duas coisas se combinam quando
+  // ambas existem na mesma página.
+  var categoryNav = document.getElementById("homeCategoryFilter");
+  var searchInput = document.getElementById("productSearch");
+  var noResultsMsg = document.getElementById("noResultsMessage");
+
+  if (categoryNav || searchInput) {
+    var scope = document.getElementById("homeProductGrid") || document.querySelector(".product-grid");
+    var cards = scope ? Array.prototype.slice.call(scope.querySelectorAll(".product-card")) : [];
+    var activeCategory = "todos";
+
+    var diacriticsRe = new RegExp(
+      "[" + String.fromCharCode(0x0300) + "-" + String.fromCharCode(0x036f) + "]",
+      "g"
+    );
+    function normalizeText(str) {
+      return str.toLowerCase().normalize("NFD").replace(diacriticsRe, "");
+    }
+
+    function applyFilters() {
+      var query = searchInput ? normalizeText(searchInput.value.trim()) : "";
+      var visibleCount = 0;
+      cards.forEach(function (card) {
+        var matchesCategory = !categoryNav || activeCategory === "todos" || card.getAttribute("data-category") === activeCategory;
+        var titleEl = card.querySelector(".product-card-title");
+        var matchesSearch = !query || (titleEl && normalizeText(titleEl.textContent).indexOf(query) !== -1);
+        var show = matchesCategory && matchesSearch;
+        card.style.display = show ? "" : "none";
+        if (show) visibleCount++;
+      });
+      if (noResultsMsg) noResultsMsg.style.display = visibleCount === 0 ? "" : "none";
+    }
+
+    if (categoryNav) {
+      var filterBtns = Array.prototype.slice.call(categoryNav.querySelectorAll("[data-filter]"));
+      filterBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          filterBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          activeCategory = btn.getAttribute("data-filter");
+          applyFilters();
         });
       });
-    });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", applyFilters);
+    }
   }
 
   /* ---------- Voltar ao topo ---------- */
