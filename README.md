@@ -25,7 +25,7 @@ sitemap.xml
 ## Antes de publicar
 
 1. **Domínio**: todas as páginas usam `https://www.miprigrafica.com/` como URL canônica (tags `canonical`, Open Graph e Schema.org). Confirme se este é o domínio real e ajuste em todas as páginas caso contrário (busca e substitui em todos os `.html`).
-2. **Google Tag Manager / Analytics**: cada página tem um snippet de GTM com o ID de exemplo `GTM-XXXXXXX` (no `<head>` e logo após `<body>`). Substitua pelo ID real do seu contêiner em todos os arquivos `.html`. O GA4 pode ser conectado dentro do próprio GTM (não precisa de outro snippet).
+2. **Google Tag Manager / Analytics**: já configurado com o contêiner real `GTM-KDVPL68S` em todas as páginas (no `<head>` e logo após `<body>`). O GA4 pode ser conectado dentro do próprio GTM (não precisa de outro snippet).
 3. **Formulário de contato**: por padrão, o formulário abre um e-mail (`mailto:`) pronto para `mipri@miprigrafica.com`. Para enviar direto para uma planilha Google:
    - Crie um Google Apps Script publicado como Web App que grava os dados em uma planilha.
    - Cole a URL do Web App na constante `FORM_ENDPOINT` em [js/main.js](js/main.js).
