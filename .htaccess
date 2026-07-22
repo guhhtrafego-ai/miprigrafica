@@ -15,7 +15,8 @@ RewriteRule ^servicos/?$ servicos.html [L]
 
 # --- 2b) Categorias antigas que foram fundidas/renomeadas ---
 RewriteRule ^servicos/envelopamento-adesivacao/?$ /servicos/comunicacao-visual [R=301,L]
-RewriteRule ^servicos/papelaria-brindes/?$ /servicos/papelaria [R=301,L]
+RewriteRule ^servicos/papelaria-brindes/?$ /servicos/impressao-digital [R=301,L]
+RewriteRule ^servicos/papelaria/?$ /servicos/impressao-digital [R=301,L]
 
 # --- 3) Serve o arquivo .html real por trás da URL limpa, sem mudar o que aparece no navegador ---
 RewriteCond %{REQUEST_FILENAME} !-d
