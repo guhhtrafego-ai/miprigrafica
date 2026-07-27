@@ -1,5 +1,9 @@
 RewriteEngine On
 
+# --- 0) Força host canônico com www e HTTPS (evita duplicação miprigrafica.com vs www.miprigrafica.com) ---
+RewriteCond %{HTTP_HOST} ^miprigrafica\.com$ [NC]
+RewriteRule ^(.*)$ https://www.miprigrafica.com/$1 [R=301,L]
+
 # --- 1) Redireciona URLs com .html para a versão limpa (sem extensão) ---
 
 # /index.html -> /
