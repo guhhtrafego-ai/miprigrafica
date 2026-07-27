@@ -632,6 +632,46 @@ p{ margin: 0 0 16px; }
   font-size: 0.9rem;
 }
 
+/* Texto introdutório único de cada página de serviço */
+.service-intro{ max-width: 760px; margin: 0 auto; color: var(--gray-700); font-size: 0.98rem; line-height: 1.7; }
+.service-intro p{ margin: 0 0 16px; }
+.service-intro p:last-child{ margin-bottom: 0; }
+
+/* FAQ por página de serviço (acordeão nativo <details>/<summary>) */
+.faq-list{ display: flex; flex-direction: column; gap: 12px; max-width: 760px; margin: 0 auto; }
+.faq-item{
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 0 20px;
+  background: var(--white);
+}
+.faq-item summary{
+  cursor: pointer;
+  padding: 16px 0;
+  font-weight: 600;
+  color: var(--teal-darker);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.faq-item summary::-webkit-details-marker{ display: none; }
+.faq-item summary::after{
+  content: "+";
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.faq-item[open] summary::after{ content: "−"; }
+.faq-item p{
+  margin: 0 0 18px;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 /* Catálogo de produtos (estilo e-commerce) */
 .product-grid{
   display: grid;
