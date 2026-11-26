@@ -17,7 +17,7 @@
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 
 <!-- Google Tag Manager -->
@@ -130,9 +130,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <!-- HERO CAROUSEL -->
   <section class="hero-carousel">
-    <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
-      <source src="/video/backgroundhero.webm" type="video/webm">
-    </video>
+    <!-- O vídeo só é carregado pelo main.js em telas largas e sem "reduzir movimento" (economiza 4 MB no celular). -->
+    <video class="hero-video" muted loop playsinline preload="none" aria-hidden="true" data-src="/video/backgroundhero.webm"></video>
     <div class="hero-slides">
       <div class="hero-slide active">
         <div class="container">
@@ -151,7 +150,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="container">
           <div class="hero-slide-content">
             <span class="eyebrow">Para revendedores</span>
-            <h1>Produção em volume, custo reduzido</h1>
+            <h2 class="hero-title">Produção em volume, custo reduzido</h2>
             <p>Estrutura pensada para quem revende: preços competitivos, agilidade e qualidade constante em grandes quantidades.</p>
             <div class="hero-cta">
               <a href="https://wa.me/5511949810102?text=Ol%C3%A1!%20Sou%20revendedor%20e%20quero%20saber%20mais." target="_blank" rel="noopener" class="btn btn-whatsapp">Falar com um consultor</a>
@@ -164,7 +163,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="container">
           <div class="hero-slide-content">
             <span class="eyebrow">Plotagem técnica</span>
-            <h1>Projetos de arquitetura e engenharia em grande formato</h1>
+            <h2 class="hero-title">Projetos de arquitetura e engenharia em grande formato</h2>
             <p>Plantas, projetos estruturais e memoriais com qualidade e prazo para escritórios técnicos.</p>
             <div class="hero-cta">
               <a href="/servicos/plotagem-projetos" class="btn btn-primary">Conhecer plotagem</a>
@@ -820,9 +819,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <option>Comunicação Visual</option>
               <option>Plotagem de Projetos</option>
               <option>Digitalização de Documentos e Plantas</option>
-              <option>Envelopamento e Adesivação</option>
               <option>Materiais para Eventos</option>
-              <option>Papelaria e Brindes</option>
+              <option>Brindes Corporativos</option>
               <option>Painéis e Displays</option>
               <option>Materiais para Obras</option>
               <option>Outro assunto</option>
