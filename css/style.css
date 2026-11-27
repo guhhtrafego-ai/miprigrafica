@@ -183,7 +183,7 @@ p{ margin: 0 0 16px; }
 .brand-fallback{
   background: var(--teal);
   color: var(--white);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.1rem;
   padding: 8px 14px;
   border-radius: var(--radius-sm);
@@ -194,7 +194,7 @@ p{ margin: 0 0 16px; }
   display: block;
   position: relative;
   padding: 12px 16px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   color: rgba(255,255,255,0.88);
   transition: color var(--transition);
@@ -599,7 +599,7 @@ p{ margin: 0 0 16px; }
   color: var(--teal-darker);
   font-family: inherit;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   transition: background var(--transition), color var(--transition), border-color var(--transition);
@@ -749,15 +749,6 @@ p{ margin: 0 0 16px; }
   line-height: 1.4;
 }
 .btn-sm{ padding: 10px 14px; font-size: 0.8rem; white-space: normal; text-align: center; line-height: 1.25; }
-.product-catalog-placeholder{
-  grid-column: 1 / -1;
-  border: 2px dashed var(--gray-300);
-  border-radius: var(--radius);
-  padding: 32px 24px;
-  text-align: center;
-  color: var(--gray-500);
-  font-size: 0.9rem;
-}
 
 /* Lightbox */
 .lightbox{
@@ -770,7 +761,7 @@ p{ margin: 0 0 16px; }
   opacity: 0; visibility: hidden;
   transition: opacity var(--transition), visibility var(--transition);
 }
-.lightbox.open{ opacity: 1; visibility: visible; }
+.lightbox.open{ opacity: 1; visibility: visible; transition: opacity var(--transition), visibility 0s; }
 .lightbox-img{
   max-width: min(88vw, 1000px);
   max-height: 84vh;
@@ -878,12 +869,82 @@ p{ margin: 0 0 16px; }
 .mt-32{ margin-top: 32px; }
 .grid-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
+/* Google rating box (Home e Clientes) */
+.rating-box{
+  display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+  max-width: 920px; margin: 0 auto;
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 32px 36px;
+}
+.rating-score{ display: flex; flex-direction: column; gap: 4px; }
+.rating-number{ font-size: 3rem; font-weight: 700; line-height: 1; color: var(--teal-darker); }
+.rating-stars{ color: #f5b400; font-size: 1.3rem; letter-spacing: 3px; }
+.rating-caption{ color: var(--gray-500); font-size: 0.95rem; }
+.rating-actions{ display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Segmentos atendidos (Clientes) */
+.segments-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.segment-card{
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 28px; display: flex; flex-direction: column; gap: 10px;
+  border-top: 4px solid var(--teal);
+}
+.segment-card:nth-child(2){ border-top-color: var(--cyan); }
+.segment-card:nth-child(3){ border-top-color: var(--magenta); }
+.segment-card:nth-child(4){ border-top-color: var(--yellow); }
+.segment-card h3{ color: var(--teal-darker); font-size: 1.05rem; }
+.segment-card p{ color: var(--gray-500); font-size: 0.92rem; flex: 1; }
+.segment-card a{ color: var(--teal); font-weight: 600; font-size: 0.9rem; }
+
+.map-links{ margin-top: 12px; font-size: 0.92rem; }
+.map-links a{ color: var(--teal); font-weight: 600; }
+.footer-hours{ margin-top: 14px; font-size: 0.9rem; color: rgba(255,255,255,0.7); line-height: 1.7; }
+.footer-hours strong{ color: var(--white); font-weight: 600; }
+
 /* ==========================================================================
    Responsive
    ========================================================================== */
+/* Link de privacidade no rodapé */
+.footer-bottom a{ color: rgba(255,255,255,0.75); text-decoration: underline; }
+.footer-bottom a:hover{ color: var(--white); }
+
+/* Aviso de cookies (LGPD) — criado pelo main.js */
+.cookie-banner{
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 1000;
+  max-width: 640px; margin: 0 auto;
+  background: var(--white); color: var(--gray-700, #333);
+  border-radius: var(--radius); box-shadow: 0 10px 32px rgba(0,0,0,0.25);
+  padding: 18px 20px; font-size: 0.9rem; line-height: 1.5;
+}
+.cookie-banner p{ margin: 0 0 12px; }
+.cookie-banner a{ color: var(--teal-darker); text-decoration: underline; }
+.cookie-banner-actions{ display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.cookie-banner-actions .btn{ padding: 9px 18px; font-size: 0.88rem; }
+.btn-cookie-reject{ background: transparent; color: var(--teal-darker); border: 2px solid var(--teal-darker); }
+.btn-cookie-reject:hover{ background: var(--gray-100, #f2f2f2); }
+.btn-cookie-accept{ background: var(--teal-darker); color: var(--white); border: 2px solid var(--teal-darker); }
+
+/* Categoria ainda sem fotos: convite para orçamento no lugar do catálogo */
+.product-catalog-cta{
+  grid-column: 1 / -1;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+}
+.product-catalog-cta p{ margin: 0 0 16px; color: var(--gray-700, #444); }
+
+/* Página de privacidade */
+.legal-content{ max-width: 780px; }
+.legal-content h2{ margin: 32px 0 10px; font-size: 1.25rem; }
+.legal-content p, .legal-content li{ line-height: 1.7; }
+.legal-content ul{ padding-left: 20px; list-style: disc; margin: 0 0 12px; }
+
+
 @media (max-width: 1024px){
   .services-grid{ grid-template-columns: repeat(2, 1fr); }
   .testimonials-grid{ grid-template-columns: repeat(2, 1fr); }
+  .segments-grid{ grid-template-columns: repeat(2, 1fr); }
   .footer-grid{ grid-template-columns: 1fr 1fr; }
   .product-grid{ grid-template-columns: repeat(3, 1fr); }
   .logos-grid-static{ grid-template-columns: repeat(3, 1fr); }
@@ -921,10 +982,15 @@ p{ margin: 0 0 16px; }
 @media (max-width: 640px){
   .services-grid{ grid-template-columns: 1fr; }
   .testimonials-grid{ grid-template-columns: 1fr; }
+  .segments-grid{ grid-template-columns: 1fr; }
+  .rating-box{ padding: 24px; }
+  .rating-actions{ width: 100%; flex-direction: column; }
   .footer-grid{ grid-template-columns: 1fr; }
   .hero-slides{ height: 640px; }
   .hero-cta{ flex-direction: column; align-items: stretch; }
-  .hero-arrow{ width: 36px; height: 36px; }
+  /* No celular as setas cobriam o texto do slide; ficam os pontos e o botão Pausar. */
+  .hero-arrow{ display: none; }
+  .product-catalog-cta .btn{ white-space: normal; justify-content: center; }
   .logos-grid-static{ grid-template-columns: repeat(2, 1fr); }
   .footer-bottom{ flex-direction: column; text-align: center; }
   .section{ padding: 56px 0; }

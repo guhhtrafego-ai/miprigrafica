@@ -13,8 +13,11 @@
       navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
     });
 
-    // Dropdown toggle on mobile (tap "Serviços" to expand submenu)
+    // Dropdown toggle on mobile (tap "Serviços" to expand submenu; o segundo
+    // toque abre a página /servicos)
     document.querySelectorAll(".has-dropdown > a").forEach(function (link) {
+      link.setAttribute("aria-haspopup", "true");
+      link.setAttribute("aria-expanded", "false");
       link.addEventListener("click", function (e) {
         if (window.innerWidth <= 860) {
           var parent = link.parentElement;
@@ -25,6 +28,7 @@
               el.classList.remove("open");
             });
             parent.classList.add("open");
+            link.setAttribute("aria-expanded", "true");
           }
         }
       });
@@ -185,7 +189,7 @@
   // mandar mensagens para esse e-mail. Para trocar o e-mail de destino,
   // gere uma chave nova em https://web3forms.com com o novo endereço.
   // Sem chave, o formulário volta a abrir um e-mail (mailto) preenchido.
-  var WEB3FORMS_KEY = "";
+  var WEB3FORMS_KEY = "dad850e0-6702-494c-bcfa-1df8f690e923";
   var WEB3FORMS_URL = "https://api.web3forms.com/submit";
   var FALLBACK_EMAIL = "mipri@miprigrafica.com";
   var ERROR_MESSAGE = "Não foi possível enviar agora. Fale conosco pelo WhatsApp (11) 94981-0102.";
@@ -206,8 +210,11 @@
       }
 
       function trackSubmit() {
-        if (window.dataLayer) {
-          window.dataLayer.push({ event: "contact_form_submit", form_id: form.id || "contact_form" });
+        if (window.mipriTrackLead) {
+          window.mipriTrackLead("contact_form_submit", "formulario", {
+            form_id: form.id || "contact_form",
+            form_subject: payload.assunto || ""
+          });
         }
       }
 
@@ -263,12 +270,48 @@
     });
   });
 
-  /* ---------- WhatsApp click tracking (GA4/GTM) ---------- */
-  document.querySelectorAll('a[href*="wa.me"], a[href*="whatsapp"]').forEach(function (link) {
-    link.addEventListener("click", function () {
-      if (window.dataLayer) {
-        window.dataLayer.push({ event: "whatsapp_click", link_url: link.href });
-      }
+  /* ---------- Rastreamento de contatos (leads) no GA4/GTM ---------- */
+  // Cada clique que vira contato manda dois eventos:
+  //  - um evento do canal (whatsapp_click, phone_click, email_click,
+  //    directions_click, contact_form_submit), com produto e página;
+  //  - um "generate_lead" (evento recomendado do GA4), com lead_channel,
+  //    que fica marcado como evento principal (conversão) no Analytics.
+  // O GA4 é carregado direto no <head> (gtag.js) e respeita o consentimento.
+  function trackEvent(name, params) {
+    if (window.dataLayer) {
+      window.dataLayer.push(Object.assign({ event: name }, params));
+    }
+    if (typeof window.gtag === "function") {
+      window.gtag("event", name, params);
+    }
+  }
+  function trackLead(channelEvent, channel, params) {
+    params = Object.assign({ lead_channel: channel, page_path: window.location.pathname }, params || {});
+    trackEvent(channelEvent, params);
+    trackEvent("generate_lead", params);
+  }
+  window.mipriTrackLead = trackLead;
+
+  var LEAD_LINKS = [
+    { selector: 'a[href*="wa.me"], a[href*="whatsapp"]', event: "whatsapp_click", channel: "whatsapp" },
+    { selector: 'a[href^="tel:"]', event: "phone_click", channel: "telefone" },
+    { selector: 'a[href^="mailto:"]', event: "email_click", channel: "email" },
+    { selector: 'a[href*="google.com/maps"], a[href*="maps.app.goo.gl"], a[href*="goo.gl/maps"]', event: "directions_click", channel: "rota" }
+  ];
+  LEAD_LINKS.forEach(function (rule) {
+    document.querySelectorAll(rule.selector).forEach(function (link) {
+      link.addEventListener("click", function () {
+        var card = link.closest(".product-card");
+        var titleEl = card && card.querySelector(".product-card-title");
+        // Onde o link está: produto, cabeçalho, rodapé ou corpo da página.
+        var place = card ? "produto" : link.closest("footer") ? "rodape" : link.closest("header") ? "cabecalho" : link.closest(".whatsapp-float") ? "botao_flutuante" : "pagina";
+        trackLead(rule.event, rule.channel, {
+          link_url: link.href.split("?")[0],
+          link_location: place,
+          product_name: titleEl ? titleEl.textContent.trim() : "",
+          product_category: card ? (card.getAttribute("data-category") || (window.location.pathname.match(/\/servicos\/([^\/.]+)/) || [])[1] || "") : ""
+        });
+      });
     });
   });
 
@@ -282,6 +325,7 @@
     var lightboxCounter = lightbox.querySelector(".lightbox-counter");
     var activeItems = [];
     var lightboxIndex = 0;
+    var lastFocused = null;
 
     function showLightbox(index) {
       lightboxIndex = (index + activeItems.length) % activeItems.length;
@@ -299,12 +343,17 @@
       lightbox.classList.add("open");
       lightbox.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
+      // Leva o foco para dentro do lightbox (e devolve ao fechar).
+      lastFocused = document.activeElement;
+      var closeEl = lightbox.querySelector(".lightbox-close");
+      if (closeEl) closeEl.focus();
     }
 
     function closeLightbox() {
       lightbox.classList.remove("open");
       lightbox.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
+      if (lastFocused && lastFocused.focus) lastFocused.focus();
     }
 
     productCards.forEach(function (card) {
@@ -328,6 +377,19 @@
     document.addEventListener("keydown", function (e) {
       if (!lightbox.classList.contains("open")) return;
       if (e.key === "Escape") closeLightbox();
+      // Prende o Tab dentro do lightbox enquanto ele está aberto.
+      if (e.key === "Tab") {
+        var focusables = Array.prototype.filter.call(
+          lightbox.querySelectorAll("button"),
+          function (el) { return el.offsetParent !== null; }
+        );
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (!lightbox.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
       if (e.key === "ArrowLeft") showLightbox(lightboxIndex - 1);
       if (e.key === "ArrowRight") showLightbox(lightboxIndex + 1);
     });
@@ -360,8 +422,11 @@
       var visibleCount = 0;
       cards.forEach(function (card) {
         var matchesCategory = !categoryNav || activeCategory === "todos" || card.getAttribute("data-category") === activeCategory;
+        // Busca no título e nas especificações do produto.
         var titleEl = card.querySelector(".product-card-title");
-        var matchesSearch = !query || (titleEl && normalizeText(titleEl.textContent).indexOf(query) !== -1);
+        var specsEl = card.querySelector(".product-specs");
+        var haystack = (titleEl ? titleEl.textContent : "") + " " + (specsEl ? specsEl.textContent : "");
+        var matchesSearch = !query || normalizeText(haystack).indexOf(query) !== -1;
         var show = matchesCategory && matchesSearch;
         card.style.display = show ? "" : "none";
         if (show) visibleCount++;
@@ -377,14 +442,89 @@
           btn.classList.add("active");
           activeCategory = btn.getAttribute("data-filter");
           applyFilters();
+          if (window.gtag) window.gtag("event", "select_content", { content_type: "categoria", content_id: activeCategory });
         });
       });
     }
 
     if (searchInput) {
       searchInput.addEventListener("input", applyFilters);
+      // Manda o termo buscado para o GA4 (evento "search"), 1,5 s depois que a
+      // pessoa para de digitar: mostra o que os clientes procuram no catálogo.
+      var searchTimer = null;
+      var lastSearch = "";
+      searchInput.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          var term = searchInput.value.trim().toLowerCase();
+          if (term.length >= 3 && term !== lastSearch && window.gtag) {
+            lastSearch = term;
+            window.gtag("event", "search", { search_term: term });
+          }
+        }, 1500);
+      });
     }
   }
+
+  /* ---------- Aviso de cookies (LGPD + Google Consent Mode v2) ---------- */
+  // O <head> de cada página já define tudo como "negado" antes do GTM
+  // carregar (ou "concedido", se o visitante aceitou antes). Aqui só mostramos
+  // o aviso enquanto não houver escolha salva, e atualizamos o consentimento.
+  var CONSENT_KEY = "mipri-consent";
+  function readConsent() {
+    try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; }
+  }
+  // O GTM também carrega o Microsoft Clarity, que não lê o Consent Mode do
+  // Google sozinho. A fila abaixo é a mesma do snippet oficial do Clarity:
+  // os comandos esperam o script carregar. Sem consentimento ele funciona
+  // sem cookies.
+  window.clarity = window.clarity || function () {
+    (window.clarity.q = window.clarity.q || []).push(arguments);
+  };
+  function clarityConsent(value) {
+    window.clarity("consentv2", { ad_Storage: value, analytics_Storage: value });
+  }
+  function saveConsent(value) {
+    try { localStorage.setItem(CONSENT_KEY, value); } catch (e) {}
+    clarityConsent(value);
+    if (typeof window.gtag === "function") {
+      window.gtag("consent", "update", {
+        ad_storage: value,
+        ad_user_data: value,
+        ad_personalization: value,
+        analytics_storage: value
+      });
+    }
+    if (window.dataLayer) window.dataLayer.push({ event: "cookie_consent_" + value });
+  }
+  function showCookieBanner() {
+    if (document.querySelector(".cookie-banner")) return;
+    var banner = document.createElement("div");
+    banner.className = "cookie-banner";
+    banner.setAttribute("role", "region");
+    banner.setAttribute("aria-label", "Aviso de cookies");
+    banner.innerHTML =
+      '<p>Usamos cookies para entender como o site é usado e melhorar o atendimento. ' +
+      'Você pode aceitar ou recusar. Saiba mais na <a href="/privacidade">Política de privacidade</a>.</p>' +
+      '<div class="cookie-banner-actions">' +
+      '<button type="button" class="btn btn-cookie-reject" data-consent="denied">Recusar</button>' +
+      '<button type="button" class="btn btn-cookie-accept" data-consent="granted">Aceitar</button>' +
+      "</div>";
+    banner.querySelectorAll("[data-consent]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        saveConsent(btn.getAttribute("data-consent"));
+        banner.parentNode.removeChild(banner);
+      });
+    });
+    document.body.appendChild(banner);
+  }
+  var savedConsent = readConsent();
+  clarityConsent(savedConsent === "granted" ? "granted" : "denied");
+  if (savedConsent !== "granted" && savedConsent !== "denied") showCookieBanner();
+  // Botões "Alterar preferências de cookies" (página de privacidade).
+  document.querySelectorAll("[data-cookie-settings]").forEach(function (btn) {
+    btn.addEventListener("click", showCookieBanner);
+  });
 
   /* ---------- Voltar ao topo ---------- */
   // A rolagem suave até #top é feita pelo CSS (html{scroll-behavior:smooth}).
