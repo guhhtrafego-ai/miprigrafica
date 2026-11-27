@@ -58,6 +58,10 @@ Single IIFE, no modules/bundler. Independent, self-guarding sections (each check
 - Lightbox for product photo galleries (any `.product-card`'s `.gallery-item` buttons, scoped per-card)
 - Catalog filtering: category pills (`data-filter` buttons) + text search (`#productSearch`), combinable, diacritic-insensitive (NFD-normalizes and strips combining marks so "cartao" matches "Cartão")
 
+### Cache-busting
+
+`.htaccess` tells browsers to cache CSS/JS for 7 days, so every page links them as `/css/style.css?v=YYYYMMDD` and `/js/main.js?v=YYYYMMDD`. Whenever `style.css` or `main.js` changes, bump that version string in **every** `.html` file, or returning visitors keep the old file.
+
 ### `css/style.css`
 
 Single stylesheet, CSS custom properties for the brand palette (`--teal`, `--teal-dark`, `--cyan`/`--magenta`/`--yellow`/`--key` for the CMYK-strip brand motif). Sectioned top to bottom (reset/variables → CMYK bar → header → hero → services grid → shop/product-catalog styles → responsive breakpoints at the very end). `--teal` and friends are authoritative — the color extracted from the logo JPG is intentionally *not* used as a reference (compression artifacts made it inaccurate).
