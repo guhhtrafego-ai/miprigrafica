@@ -204,8 +204,11 @@
         statusEl.className = "form-status " + type;
       }
 
-      if (window.dataLayer) {
-        window.dataLayer.push({ event: "contact_form_submit", form_id: form.id || "contact_form" });
+      if (window.mipriTrackLead) {
+        window.mipriTrackLead("contact_form_submit", "formulario", {
+          form_id: form.id || "contact_form",
+          form_subject: payload.assunto || ""
+        });
       }
 
       if (FORM_ENDPOINT) {
@@ -240,25 +243,48 @@
     });
   });
 
-  /* ---------- WhatsApp click tracking (GA4/GTM) ---------- */
-  document.querySelectorAll('a[href*="wa.me"], a[href*="whatsapp"]').forEach(function (link) {
-    link.addEventListener("click", function () {
-      var card = link.closest(".product-card");
-      var titleEl = card && card.querySelector(".product-card-title");
-      var info = {
-        link_url: link.href,
-        product_name: titleEl ? titleEl.textContent.trim() : "",
-        product_category: card ? (card.getAttribute("data-category") || (window.location.pathname.match(/\/servicos\/([^\/.]+)/) || [])[1] || "") : "",
-        page_path: window.location.pathname
-      };
-      if (window.dataLayer) {
-        window.dataLayer.push(Object.assign({ event: "whatsapp_click" }, info));
-      }
-      // O GA4 é carregado direto no <head> (gtag.js), então o clique também
-      // vira um evento do Analytics. O consentimento continua valendo.
-      if (typeof window.gtag === "function") {
-        window.gtag("event", "whatsapp_click", info);
-      }
+  /* ---------- Rastreamento de contatos (leads) no GA4/GTM ---------- */
+  // Cada clique que vira contato manda dois eventos:
+  //  - um evento do canal (whatsapp_click, phone_click, email_click,
+  //    directions_click, contact_form_submit), com produto e página;
+  //  - um "generate_lead" (evento recomendado do GA4), com lead_channel,
+  //    que fica marcado como evento principal (conversão) no Analytics.
+  // O GA4 é carregado direto no <head> (gtag.js) e respeita o consentimento.
+  function trackEvent(name, params) {
+    if (window.dataLayer) {
+      window.dataLayer.push(Object.assign({ event: name }, params));
+    }
+    if (typeof window.gtag === "function") {
+      window.gtag("event", name, params);
+    }
+  }
+  function trackLead(channelEvent, channel, params) {
+    params = Object.assign({ lead_channel: channel, page_path: window.location.pathname }, params || {});
+    trackEvent(channelEvent, params);
+    trackEvent("generate_lead", params);
+  }
+  window.mipriTrackLead = trackLead;
+
+  var LEAD_LINKS = [
+    { selector: 'a[href*="wa.me"], a[href*="whatsapp"]', event: "whatsapp_click", channel: "whatsapp" },
+    { selector: 'a[href^="tel:"]', event: "phone_click", channel: "telefone" },
+    { selector: 'a[href^="mailto:"]', event: "email_click", channel: "email" },
+    { selector: 'a[href*="google.com/maps"], a[href*="maps.app.goo.gl"], a[href*="goo.gl/maps"]', event: "directions_click", channel: "rota" }
+  ];
+  LEAD_LINKS.forEach(function (rule) {
+    document.querySelectorAll(rule.selector).forEach(function (link) {
+      link.addEventListener("click", function () {
+        var card = link.closest(".product-card");
+        var titleEl = card && card.querySelector(".product-card-title");
+        // Onde o link está: produto, cabeçalho, rodapé ou corpo da página.
+        var place = card ? "produto" : link.closest("footer") ? "rodape" : link.closest("header") ? "cabecalho" : link.closest(".whatsapp-float") ? "botao_flutuante" : "pagina";
+        trackLead(rule.event, rule.channel, {
+          link_url: link.href.split("?")[0],
+          link_location: place,
+          product_name: titleEl ? titleEl.textContent.trim() : "",
+          product_category: card ? (card.getAttribute("data-category") || (window.location.pathname.match(/\/servicos\/([^\/.]+)/) || [])[1] || "") : ""
+        });
+      });
     });
   });
 
@@ -389,12 +415,27 @@
           btn.classList.add("active");
           activeCategory = btn.getAttribute("data-filter");
           applyFilters();
+          if (window.gtag) window.gtag("event", "select_content", { content_type: "categoria", content_id: activeCategory });
         });
       });
     }
 
     if (searchInput) {
       searchInput.addEventListener("input", applyFilters);
+      // Manda o termo buscado para o GA4 (evento "search"), 1,5 s depois que a
+      // pessoa para de digitar: mostra o que os clientes procuram no catálogo.
+      var searchTimer = null;
+      var lastSearch = "";
+      searchInput.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          var term = searchInput.value.trim().toLowerCase();
+          if (term.length >= 3 && term !== lastSearch && window.gtag) {
+            lastSearch = term;
+            window.gtag("event", "search", { search_term: term });
+          }
+        }, 1500);
+      });
     }
   }
 
