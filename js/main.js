@@ -179,17 +179,22 @@
   });
 
   /* ---------- Contact form ---------- */
-  // Para ativar o envio automático para uma planilha Google, publique um
-  // Google Apps Script como Web App e cole a URL abaixo em FORM_ENDPOINT.
-  // Enquanto FORM_ENDPOINT estiver vazio, o formulário abre um e-mail
-  // (mailto) pronto com os dados preenchidos, como alternativa simples.
-  var FORM_ENDPOINT = ""; // ex: "https://script.google.com/macros/s/XXXXX/exec"
+  // O envio é feito pelo Web3Forms (serviço gratuito, sem servidor nosso):
+  // ele recebe os dados e manda um e-mail para o endereço ligado à chave
+  // abaixo. A chave é pública (feita para ficar no site); ela só permite
+  // mandar mensagens para esse e-mail. Para trocar o e-mail de destino,
+  // gere uma chave nova em https://web3forms.com com o novo endereço.
+  // Sem chave, o formulário volta a abrir um e-mail (mailto) preenchido.
+  var WEB3FORMS_KEY = "";
+  var WEB3FORMS_URL = "https://api.web3forms.com/submit";
   var FALLBACK_EMAIL = "mipri@miprigrafica.com";
+  var ERROR_MESSAGE = "Não foi possível enviar agora. Fale conosco pelo WhatsApp (11) 94981-0102.";
 
   document.querySelectorAll("form.contact-form-el").forEach(function (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var statusEl = form.querySelector(".form-status");
+      var button = form.querySelector('button[type="submit"]');
       var data = new FormData(form);
       var payload = {};
       data.forEach(function (value, key) { payload[key] = value; });
@@ -200,28 +205,50 @@
         statusEl.className = "form-status " + type;
       }
 
-      if (window.dataLayer) {
-        window.dataLayer.push({ event: "contact_form_submit", form_id: form.id || "contact_form" });
+      function trackSubmit() {
+        if (window.dataLayer) {
+          window.dataLayer.push({ event: "contact_form_submit", form_id: form.id || "contact_form" });
+        }
       }
 
-      if (FORM_ENDPOINT) {
-        // Sem header Content-Type: o corpo vai como text/plain, uma "simple
-        // request" que não dispara preflight CORS (o Google Apps Script não
-        // responde a preflight). No Apps Script, leia com
-        // JSON.parse(e.postData.contents).
-        fetch(FORM_ENDPOINT, {
+      if (WEB3FORMS_KEY) {
+        if (button) { button.disabled = true; button.dataset.label = button.textContent; button.textContent = "Enviando..."; }
+        showStatus("", "");
+
+        fetch(WEB3FORMS_URL, {
           method: "POST",
-          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_KEY,
+            subject: "Orçamento pelo site: " + (payload.nome || "") + " (" + (payload.assunto || "") + ")",
+            from_name: "Site Mipri Gráfica",
+            botcheck: payload.botcheck || "",
+            "Nome": payload.nome || "",
+            email: payload.email || "",
+            "Telefone / WhatsApp": payload.telefone || "",
+            "Assunto": payload.assunto || "",
+            "Mensagem": payload.mensagem || "",
+            "Enviado da página": window.location.href,
+          }),
         })
           .then(function (response) {
-            if (!response.ok) throw new Error("HTTP " + response.status);
+            return response.json().catch(function () { return {}; }).then(function (json) {
+              if (!response.ok || !json.success) throw new Error(json.message || "HTTP " + response.status);
+            });
+          })
+          .then(function () {
+            trackSubmit();
             showStatus("success", "Mensagem enviada com sucesso! Em breve entraremos em contato.");
             form.reset();
           })
           .catch(function () {
-            showStatus("error", "Não foi possível enviar agora. Fale conosco pelo WhatsApp (11) 94981-0102.");
+            showStatus("error", ERROR_MESSAGE);
+          })
+          .then(function () {
+            if (button) { button.disabled = false; button.textContent = button.dataset.label; }
           });
       } else {
+        trackSubmit();
         var subject = encodeURIComponent("Contato via site - " + (payload.nome || ""));
         var body = encodeURIComponent(
           "Nome: " + (payload.nome || "") +

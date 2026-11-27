@@ -53,7 +53,7 @@ Single IIFE, no modules/bundler. Independent, self-guarding sections (each check
 - Mobile nav toggle
 - Hero carousel (Home only)
 - Active nav-link highlighting by current path
-- Contact form: posts to `FORM_ENDPOINT` (a Google Apps Script Web App URL) if set, otherwise falls back to opening a pre-filled `mailto:`. `FORM_ENDPOINT` is currently empty.
+- Contact form: posts JSON to Web3Forms (`WEB3FORMS_KEY`, a free form-to-email service; the key is public by design and tied to the destination inbox) and shows a success/error message in place. Both forms carry a hidden `botcheck` honeypot. If `WEB3FORMS_KEY` is empty it falls back to opening a pre-filled `mailto:`. PHP `mail()` on the host was ruled out: the site is on HostGator but the domain's email is on GoDaddy (MX `secureserver.net`) with SPF `-all`, so mail sent from the web server would fail SPF/DMARC.
 - WhatsApp link click tracking (pushes to `dataLayer` for GTM)
 - Lightbox for product photo galleries (any `.product-card`'s `.gallery-item` buttons, scoped per-card)
 - Catalog filtering: category pills (`data-filter` buttons) + text search (`#productSearch`), combinable, diacritic-insensitive (NFD-normalizes and strips combining marks so "cartao" matches "Cartão")
