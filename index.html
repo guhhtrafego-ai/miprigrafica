@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/style.css?v=20261127">
+<link rel="stylesheet" href="/css/style.css?v=20261130">
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -28,7 +28,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-KDVPL68S');</script>
 <!-- End Google Tag Manager -->
 
-<!-- openingHoursSpecification e geo ainda não confirmados pelo dono do negócio. Adicionar aqui quando disponíveis (ver Anexo A do brief) -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -48,8 +47,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     "postalCode": "04142-092",
     "addressCountry": "BR"
   },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": -23.6131,
+    "longitude": -46.6205
+  },
+  "hasMap": "https://www.google.com/maps?cid=4661576426654152326",
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+      "opens": "08:00",
+      "closes": "18:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Friday",
+      "opens": "08:00",
+      "closes": "17:00"
+    }
+  ],
   "areaServed": "São Paulo",
-  "sameAs": ["https://www.instagram.com/graficamipri/"],
+  "sameAs": ["https://www.instagram.com/graficamipri/", "https://www.google.com/maps?cid=4661576426654152326"],
   "priceRange": "$$"
 }
 </script>
@@ -749,26 +768,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="section-head">
         <span class="eyebrow">Avaliações</span>
         <h2>O que dizem nossos clientes</h2>
-        <p>Depoimentos reais de clientes atendidos pela Mipri Gráfica Express.</p>
+        <p>Veja o que os clientes contam sobre a Mipri Gráfica Express no nosso perfil do Google.</p>
       </div>
-      <div class="testimonials-grid">
-        <div class="testimonial-card">
-          <div class="testimonial-stars">★★★★★</div>
-          <p>"Atendimento rápido e preço muito bom. Fechei um pedido grande de panfletos e ficou pronto antes do prazo."</p>
-          <div class="testimonial-author">Cliente Mipri <span>Google Meu Negócio</span></div>
+      <div class="rating-box">
+        <div class="rating-score">
+          <span class="rating-number">4,7</span>
+          <span class="rating-stars" aria-hidden="true">★★★★★</span>
+          <span class="rating-caption">no Google, com mais de 40 avaliações</span>
         </div>
-        <div class="testimonial-card">
-          <div class="testimonial-stars">★★★★★</div>
-          <p>"Sou revendedor e a Mipri se tornou parceira fixa. Volume, qualidade e frete grátis fazem toda diferença."</p>
-          <div class="testimonial-author">Cliente Mipri <span>Google Meu Negócio</span></div>
-        </div>
-        <div class="testimonial-card">
-          <div class="testimonial-stars">★★★★★</div>
-          <p>"Precisava plotar um projeto de engenharia com urgência e o atendimento técnico foi excelente."</p>
-          <div class="testimonial-author">Cliente Mipri <span>Google Meu Negócio</span></div>
+        <div class="rating-actions">
+          <a href="https://www.google.com/maps?cid=4661576426654152326" target="_blank" rel="noopener" class="btn btn-primary">Ver avaliações no Google</a>
+          <a href="https://search.google.com/local/writereview?placeid=ChIJVVWZuqVbzpQRhjYO3A8_sUA" target="_blank" rel="noopener" class="btn btn-outline">Avaliar a Mipri</a>
         </div>
       </div>
-      <p class="form-note text-center mt-32">Depoimentos estáticos. Estrutura pronta para futura integração automática com o Google Meu Negócio.</p>
     </div>
   </section>
 
@@ -900,6 +912,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           Vila da Saúde - São Paulo/SP<br>
           CEP 04142-092
         </address>
+        <p class="footer-hours"><strong>Horário</strong><br>Seg a qui, das 8h às 18h<br>Sex, das 8h às 17h<br>Sáb e dom, fechado</p>
         <ul>
           <li><a href="mailto:mipri@miprigrafica.com">mipri@miprigrafica.com</a>, gráfica e comunicação visual</li>
           <li><a href="mailto:plotagem@miprigrafica.com">plotagem@miprigrafica.com</a>, plotagem de projetos</li>

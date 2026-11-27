@@ -878,12 +878,45 @@ p{ margin: 0 0 16px; }
 .mt-32{ margin-top: 32px; }
 .grid-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
+/* Google rating box (Home e Clientes) */
+.rating-box{
+  display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+  max-width: 920px; margin: 0 auto;
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 32px 36px;
+}
+.rating-score{ display: flex; flex-direction: column; gap: 4px; }
+.rating-number{ font-size: 3rem; font-weight: 800; line-height: 1; color: var(--teal-darker); }
+.rating-stars{ color: #f5b400; font-size: 1.3rem; letter-spacing: 3px; }
+.rating-caption{ color: var(--gray-500); font-size: 0.95rem; }
+.rating-actions{ display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Segmentos atendidos (Clientes) */
+.segments-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.segment-card{
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 28px; display: flex; flex-direction: column; gap: 10px;
+  border-top: 4px solid var(--teal);
+}
+.segment-card:nth-child(2){ border-top-color: var(--cyan); }
+.segment-card:nth-child(3){ border-top-color: var(--magenta); }
+.segment-card:nth-child(4){ border-top-color: var(--yellow); }
+.segment-card h3{ color: var(--teal-darker); font-size: 1.05rem; }
+.segment-card p{ color: var(--gray-500); font-size: 0.92rem; flex: 1; }
+.segment-card a{ color: var(--teal); font-weight: 600; font-size: 0.9rem; }
+
+.map-links{ margin-top: 12px; font-size: 0.92rem; }
+.map-links a{ color: var(--teal); font-weight: 600; }
+.footer-hours{ margin-top: 14px; font-size: 0.9rem; color: rgba(255,255,255,0.7); line-height: 1.7; }
+.footer-hours strong{ color: var(--white); font-weight: 600; }
+
 /* ==========================================================================
    Responsive
    ========================================================================== */
 @media (max-width: 1024px){
   .services-grid{ grid-template-columns: repeat(2, 1fr); }
   .testimonials-grid{ grid-template-columns: repeat(2, 1fr); }
+  .segments-grid{ grid-template-columns: repeat(2, 1fr); }
   .footer-grid{ grid-template-columns: 1fr 1fr; }
   .product-grid{ grid-template-columns: repeat(3, 1fr); }
   .logos-grid-static{ grid-template-columns: repeat(3, 1fr); }
@@ -921,6 +954,9 @@ p{ margin: 0 0 16px; }
 @media (max-width: 640px){
   .services-grid{ grid-template-columns: 1fr; }
   .testimonials-grid{ grid-template-columns: 1fr; }
+  .segments-grid{ grid-template-columns: 1fr; }
+  .rating-box{ padding: 24px; }
+  .rating-actions{ width: 100%; flex-direction: column; }
   .footer-grid{ grid-template-columns: 1fr; }
   .hero-slides{ height: 640px; }
   .hero-cta{ flex-direction: column; align-items: stretch; }
