@@ -259,7 +259,8 @@
     function showLightbox(index) {
       lightboxIndex = (index + activeItems.length) % activeItems.length;
       var img = activeItems[lightboxIndex].querySelector("img");
-      lightboxImg.src = img.src;
+      // data-full aponta para a versão grande (a miniatura é pequena demais para o lightbox).
+      lightboxImg.src = img.getAttribute("data-full") || img.currentSrc || img.src;
       lightboxImg.alt = img.alt;
       if (lightboxCounter) lightboxCounter.textContent = (lightboxIndex + 1) + " / " + activeItems.length;
     }
