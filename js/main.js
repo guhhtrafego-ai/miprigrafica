@@ -243,16 +243,21 @@
   /* ---------- WhatsApp click tracking (GA4/GTM) ---------- */
   document.querySelectorAll('a[href*="wa.me"], a[href*="whatsapp"]').forEach(function (link) {
     link.addEventListener("click", function () {
+      var card = link.closest(".product-card");
+      var titleEl = card && card.querySelector(".product-card-title");
+      var info = {
+        link_url: link.href,
+        product_name: titleEl ? titleEl.textContent.trim() : "",
+        product_category: card ? (card.getAttribute("data-category") || (window.location.pathname.match(/\/servicos\/([^\/.]+)/) || [])[1] || "") : "",
+        page_path: window.location.pathname
+      };
       if (window.dataLayer) {
-        var card = link.closest(".product-card");
-        var titleEl = card && card.querySelector(".product-card-title");
-        window.dataLayer.push({
-          event: "whatsapp_click",
-          link_url: link.href,
-          product_name: titleEl ? titleEl.textContent.trim() : "",
-          product_category: card ? (card.getAttribute("data-category") || (window.location.pathname.match(/\/servicos\/([^\/.]+)/) || [])[1] || "") : "",
-          page_path: window.location.pathname
-        });
+        window.dataLayer.push(Object.assign({ event: "whatsapp_click" }, info));
+      }
+      // O GA4 é carregado direto no <head> (gtag.js), então o clique também
+      // vira um evento do Analytics. O consentimento continua valendo.
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "whatsapp_click", info);
       }
     });
   });
