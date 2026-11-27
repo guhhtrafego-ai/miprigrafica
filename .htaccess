@@ -1,3 +1,12 @@
+# Sem listagem de pastas; página 404 com o visual do site.
+Options -Indexes
+ErrorDocument 404 /404.html
+
+# Não acrescentar "/" em /servicos (existe a pasta servicos/ ao lado de
+# servicos.html). Sem isso o Apache redireciona /servicos -> /servicos/,
+# contradizendo o canonical e o sitemap.
+DirectorySlash Off
+
 RewriteEngine On
 
 # --- 0) Força host canônico com www e HTTPS (evita duplicação miprigrafica.com vs www.miprigrafica.com) ---
@@ -14,8 +23,9 @@ RewriteRule ^index\.html$ / [R=301,L]
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\s/([^.\s]+)\.html[\s?] [NC]
 RewriteRule ^ /%1 [R=301,L]
 
-# --- 2) /servicos e /servicos/ servem servicos.html (existe também a pasta servicos/) ---
-RewriteRule ^servicos/?$ servicos.html [L]
+# --- 2) /servicos serve servicos.html (existe também a pasta servicos/); /servicos/ redireciona para a versão sem barra ---
+RewriteRule ^servicos/$ /servicos [R=301,L]
+RewriteRule ^servicos$ servicos.html [L]
 
 # --- 2b) Categorias antigas que foram fundidas/renomeadas ---
 RewriteRule ^servicos/envelopamento-adesivacao/?$ /servicos/comunicacao-visual [R=301,L]
@@ -26,3 +36,22 @@ RewriteRule ^servicos/papelaria/?$ /servicos/impressao-digital [R=301,L]
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^(.+)$ $1.html [NC,L]
+
+# --- 4) Cache no navegador ---
+# CSS/JS por 7 dias (não têm versão na URL); imagens, vídeo e fontes por 30 dias.
+# O HTML não é cacheado, para que atualizações apareçam na hora.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 0 seconds"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType text/javascript "access plus 7 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/x-icon "access plus 30 days"
+  ExpiresByType video/webm "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 30 days"
+</IfModule>

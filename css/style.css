@@ -326,7 +326,8 @@ p{ margin: 0 0 16px; }
   width: 100%;
 }
 .hero-slide-content .eyebrow{ color: var(--yellow); }
-.hero-slide-content h1{ color: var(--white); margin-bottom: 18px; }
+.hero-slide-content h1,
+.hero-slide-content .hero-title{ color: var(--white); margin-bottom: 18px; font-size: clamp(2rem, 4vw, 3rem); }
 .hero-slide-content p{ font-size: 1.1rem; color: rgba(255,255,255,0.9); margin-bottom: 28px; }
 .hero-cta{ display: flex; gap: 14px; flex-wrap: wrap; }
 .hero-dots{
@@ -342,6 +343,14 @@ p{ margin: 0 0 16px; }
   transition: opacity var(--transition), background var(--transition);
 }
 .hero-dots button.active{ background: var(--white); opacity: 1; }
+/* Botão de pausar/retomar o carrossel (criado pelo main.js) */
+.hero-dots .hero-pause{
+  width: auto; height: auto; border-radius: 12px;
+  padding: 2px 10px; margin-left: 6px;
+  font: 600 0.7rem/1.4 var(--font); color: var(--white);
+  background: transparent; opacity: 0.8;
+}
+.hero-dots .hero-pause:hover, .hero-dots .hero-pause:focus-visible{ opacity: 1; background: rgba(255,255,255,0.15); }
 .hero-arrow{
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 44px; height: 44px; border-radius: 50%;

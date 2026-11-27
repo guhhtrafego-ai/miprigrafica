@@ -28,7 +28,7 @@ Deployment is **manual**, not CI/CD: build a zip of the deployable files and upl
 
 There is no include/partial system. The `<head>` boilerplate, the inline `<svg>` icon sprite (`#icon-whatsapp`, `#icon-instagram`, `#icon-location`, `#icon-mail`, `#icon-check`, `#icon-arrow-up`), the `<header>` with nav dropdown, the `<footer>`, and the lightbox markup are **duplicated verbatim in every single `.html` file**. The icon sprite is inline (not an external `.svg` file) specifically so pages still render correctly when opened directly via `file://` — `<use href="icons.svg#...">` doesn't work in that context.
 
-This means: any change to the nav menu, footer links, or footer contact info must be applied to **every** `.html` file (root pages + everything in `servicos/`), not just one. There is no single source of truth to edit.
+This means: any change to the nav menu, footer links, or footer contact info must be applied to **every** `.html` file (root pages including `404.html` + everything in `servicos/`), not just one. There is no single source of truth to edit.
 
 ### Clean URLs via `.htaccess`
 
@@ -57,6 +57,10 @@ Single IIFE, no modules/bundler. Independent, self-guarding sections (each check
 - WhatsApp link click tracking (pushes to `dataLayer` for GTM)
 - Lightbox for product photo galleries (any `.product-card`'s `.gallery-item` buttons, scoped per-card)
 - Catalog filtering: category pills (`data-filter` buttons) + text search (`#productSearch`), combinable, diacritic-insensitive (NFD-normalizes and strips combining marks so "cartao" matches "Cartão")
+
+### Cache-busting
+
+`.htaccess` tells browsers to cache CSS/JS for 7 days, so every page links them as `/css/style.css?v=YYYYMMDD` and `/js/main.js?v=YYYYMMDD`. Whenever `style.css` or `main.js` changes, bump that version string in **every** `.html` file, or returning visitors keep the old file.
 
 ### `css/style.css`
 

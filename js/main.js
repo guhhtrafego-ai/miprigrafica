@@ -36,9 +36,25 @@
         if (window.innerWidth <= 860 && !link.parentElement.classList.contains("has-dropdown")) {
           mainNav.classList.remove("open");
           navToggle.classList.remove("open");
+          navToggle.setAttribute("aria-expanded", "false");
         }
       });
     });
+  }
+
+  /* ---------- Vídeo de fundo do hero ---------- */
+  // Só baixa o vídeo (4 MB) em telas largas e quando o usuário não pediu
+  // "reduzir movimento". No celular fica só o fundo teal + overlay.
+  var heroVideo = document.querySelector(".hero-video[data-src]");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (heroVideo && !reduceMotion && window.matchMedia("(min-width: 641px)").matches) {
+    var source = document.createElement("source");
+    source.src = heroVideo.getAttribute("data-src");
+    source.type = "video/webm";
+    heroVideo.appendChild(source);
+    heroVideo.load();
+    var playPromise = heroVideo.play();
+    if (playPromise && playPromise.catch) playPromise.catch(function () {});
   }
 
   /* ---------- Hero carousel ---------- */
@@ -63,7 +79,7 @@
       });
     }
 
-    var dots = dotsWrap ? dotsWrap.querySelectorAll("button") : [];
+    var dots = dotsWrap ? dotsWrap.querySelectorAll("button:not(.hero-pause)") : [];
 
     function goToSlide(index) {
       var newIndex = (index + slides.length) % slides.length;
@@ -99,9 +115,45 @@
     function nextSlide() { goToSlide(current + 1); }
     function prevSlide() { goToSlide(current - 1); }
 
+    // Autoplay pausa com o mouse em cima, com foco do teclado dentro do
+    // carrossel, com a aba em segundo plano, ou pelo botão de pausa
+    // (WCAG 2.2.2). Não inicia se o usuário prefere menos movimento.
+    var userPaused = reduceMotion;
+    var hoverPaused = false;
+
     function resetTimer() {
       clearInterval(timer);
-      timer = setInterval(nextSlide, intervalMs);
+      if (!userPaused && !hoverPaused && !document.hidden) {
+        timer = setInterval(nextSlide, intervalMs);
+      }
+    }
+
+    var carousel = document.querySelector(".hero-carousel");
+    if (carousel) {
+      carousel.addEventListener("mouseenter", function () { hoverPaused = true; resetTimer(); });
+      carousel.addEventListener("mouseleave", function () { hoverPaused = false; resetTimer(); });
+      carousel.addEventListener("focusin", function () { hoverPaused = true; resetTimer(); });
+      carousel.addEventListener("focusout", function (e) {
+        if (!carousel.contains(e.relatedTarget)) { hoverPaused = false; resetTimer(); }
+      });
+    }
+    document.addEventListener("visibilitychange", resetTimer);
+
+    if (dotsWrap) {
+      var pauseBtn = document.createElement("button");
+      pauseBtn.type = "button";
+      pauseBtn.className = "hero-pause";
+      var syncPauseBtn = function () {
+        pauseBtn.textContent = userPaused ? "Retomar" : "Pausar";
+        pauseBtn.setAttribute("aria-label", userPaused ? "Retomar troca automática de slides" : "Pausar troca automática de slides");
+      };
+      syncPauseBtn();
+      pauseBtn.addEventListener("click", function () {
+        userPaused = !userPaused;
+        syncPauseBtn();
+        resetTimer();
+      });
+      dotsWrap.appendChild(pauseBtn);
     }
 
     var nextBtn = document.querySelector(".hero-arrow.next");
@@ -113,7 +165,7 @@
   }
 
   /* ---------- Active nav link highlighting ---------- */
-  var currentPath = window.location.pathname.split("/").pop() || "index.html";
+  var currentPath = window.location.pathname.replace(/\/+$/, "").split("/").pop() || "index.html";
   document.querySelectorAll(".main-nav a[href]").forEach(function (link) {
     var href = link.getAttribute("href").split("/").pop();
     if (href === currentPath) link.classList.add("active");
@@ -153,12 +205,16 @@
       }
 
       if (FORM_ENDPOINT) {
+        // Sem header Content-Type: o corpo vai como text/plain, uma "simple
+        // request" que não dispara preflight CORS (o Google Apps Script não
+        // responde a preflight). No Apps Script, leia com
+        // JSON.parse(e.postData.contents).
         fetch(FORM_ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         })
-          .then(function () {
+          .then(function (response) {
+            if (!response.ok) throw new Error("HTTP " + response.status);
             showStatus("success", "Mensagem enviada com sucesso! Em breve entraremos em contato.");
             form.reset();
           })
