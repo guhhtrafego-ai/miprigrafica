@@ -20,7 +20,7 @@ npx serve -l 5500 .
 
 Deployment is **manual**, not CI/CD: build a zip of the deployable files and upload it through the GoDaddy cPanel File Manager (Upload → Extract). The zip must **not** include dev-only content: `midiaserviços/`, `midiaserviços_BACKUP_ORIGINAL/`, `.git/`, `.claude/`, `inventario-fotos-midiaservicos.csv`, `LOGOFAVICON.jpg`, `README.md`.
 
-**Known pitfall:** a zip built with Windows PowerShell's `Compress-Archive` stores entry paths with backslashes (`img\servicos\...`), which silently breaks/truncates extraction on GoDaddy's Linux server (folders show up empty or with epoch timestamps). Build deployment zips with a tool that writes forward-slash paths instead (e.g. Node's `archiver` package with `zlib` level 9), never `Compress-Archive` or Windows Explorer's "Send to > Compressed folder".
+**Known pitfall:** a zip built with Windows PowerShell's `Compress-Archive` stores entry paths with backslashes (`img\servicos\...`), which silently breaks/truncates extraction on GoDaddy's Linux server (folders show up empty or with epoch timestamps). Build deployment zips with a tool that writes forward-slash paths instead, never `Compress-Archive` or Windows Explorer's "Send to > Compressed folder". Use `python3 scripts/gerar-zip.py` (whole site) or `python3 scripts/gerar-zip.py --desde origin/main` (only files changed since that ref): it applies the exclusions above, writes `/` paths, and splits into parts under the host's 25 MB upload limit. `scripts/` itself is never deployed.
 
 ## Architecture
 
@@ -41,7 +41,7 @@ All internal links, canonical tags, and asset paths (`css/`, `js/`, `img/`) use 
 
 ### The services catalog: three layers that must stay in sync
 
-1. **Per-category subpages** (`servicos/*.html`) — one file per category, each with its own `product-grid` of `product-card` divs (photo + gallery thumbnails + specs + a WhatsApp deep-link pre-filled with a message). Current categories: `impressao-digital`, `comunicacao-visual`, `plotagem-projetos`, `digitalizacao`, `brindes-corporativos`, `materiais-eventos`, `paineis-displays`, `materiais-obras`. `digitalizacao` and `materiais-eventos` currently have no products (they show a `product-catalog-placeholder` message instead of a grid).
+1. **Per-category subpages** (`servicos/*.html`) — one file per category, each with its own `product-grid` of `product-card` divs (photo + gallery thumbnails + specs + a WhatsApp deep-link pre-filled with a message). Current categories: `impressao-digital`, `comunicacao-visual`, `plotagem-projetos`, `digitalizacao`, `brindes-corporativos`, `materiais-eventos`, `paineis-displays`, `materiais-obras`. `digitalizacao` and `materiais-eventos` currently have no products (there are no real photos yet); they show a `product-catalog-cta` box with a WhatsApp quote button instead of a grid.
 2. **The combined catalog**, embedded identically in both `index.html` (Home) and `servicos.html` (services index) — a single `product-grid` containing **every** product card from every category subpage, each tagged `data-category="<slug>"`, filtered client-side by category pills (`#homeCategoryFilter`) and a text search box (`#productSearch`). Categories with zero products are excluded from these pills (no point filtering to an empty grid).
 3. Both layers must be rebuilt together whenever products move between categories, get added/removed, or a category is merged/split — there is no single source; the combined catalog's cards are a **duplicate copy**, not a reference, of the subpage cards. Category renames/merges historically also required updating: the nav dropdown + footer link list (all files), the `shop-categories` pill row on every subpage, `.htaccess` redirects for the old slug, and `sitemap.xml`.
 
@@ -54,9 +54,10 @@ Single IIFE, no modules/bundler. Independent, self-guarding sections (each check
 - Hero carousel (Home only)
 - Active nav-link highlighting by current path
 - Contact form: posts to `FORM_ENDPOINT` (a Google Apps Script Web App URL) if set, otherwise falls back to opening a pre-filled `mailto:`. `FORM_ENDPOINT` is currently empty.
-- WhatsApp link click tracking (pushes to `dataLayer` for GTM)
-- Lightbox for product photo galleries (any `.product-card`'s `.gallery-item` buttons, scoped per-card)
-- Catalog filtering: category pills (`data-filter` buttons) + text search (`#productSearch`), combinable, diacritic-insensitive (NFD-normalizes and strips combining marks so "cartao" matches "Cartão")
+- WhatsApp link click tracking (pushes `whatsapp_click` to `dataLayer` with `link_url`, `product_name`, `product_category`, `page_path`)
+- Lightbox for product photo galleries (any `.product-card`'s `.gallery-item` buttons, scoped per-card); moves focus in, traps Tab, returns focus on close
+- Cookie consent banner (LGPD): every page's `<head>` sets Google Consent Mode v2 defaults *before* the GTM snippet (denied unless `localStorage["mipri-consent"] === "granted"`); `main.js` injects the banner while no choice is saved and sends `gtag('consent','update',…)`. Any `[data-cookie-settings]` button reopens it (used on `privacidade.html`). New pages must copy that consent `<script>` above GTM.
+- Catalog filtering: category pills (`data-filter` buttons) + text search (`#productSearch`, matches title and `.product-specs`), combinable, diacritic-insensitive (NFD-normalizes and strips combining marks so "cartao" matches "Cartão")
 
 ### Cache-busting
 
@@ -71,6 +72,9 @@ Single stylesheet, CSS custom properties for the brand palette (`--teal`, `--tea
 A raw source-photo library (organized by Portuguese product-category folder names), separate from `img/servicos/` which holds the actual optimized site assets. Photos get copied/resized from here into `img/servicos/<category>/` when adding products — this folder itself is never referenced by the site. `midiaserviços_BACKUP_ORIGINAL/` is a gitignored, unmodified backup of the originals.
 
 ## Content already baked into every page
+
+- Free delivery ("frete grátis") is only **up to 2 km from the shop**; never write "frete grátis para São Paulo". Prices and lead times are only quoted via WhatsApp, don't publish them.
+- Footer links to `/privacidade` (privacy policy). Social share image is `img/og-mipri.jpg` (1200×630).
 
 - WhatsApp: `5511949810102` / `(11) 94981-0102`
 - Emails: `mipri@miprigrafica.com` (general), `plotagem@miprigrafica.com` (plotting)
