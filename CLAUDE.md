@@ -53,7 +53,7 @@ Single IIFE, no modules/bundler. Independent, self-guarding sections (each check
 - Mobile nav toggle
 - Hero carousel (Home only)
 - Active nav-link highlighting by current path
-- Contact form: posts to `FORM_ENDPOINT` (a Google Apps Script Web App URL) if set, otherwise falls back to opening a pre-filled `mailto:`. `FORM_ENDPOINT` is currently empty.
+- Contact form: posts JSON to Web3Forms (`WEB3FORMS_KEY`, a free form-to-email service; the key is public by design and tied to the destination inbox) and shows a success/error message in place. Both forms carry a hidden `botcheck` honeypot. If `WEB3FORMS_KEY` is empty it falls back to opening a pre-filled `mailto:`. PHP `mail()` on the host was ruled out: the site is on HostGator but the domain's email is on GoDaddy (MX `secureserver.net`) with SPF `-all`, so mail sent from the web server would fail SPF/DMARC.
 - WhatsApp link click tracking (pushes `whatsapp_click` to `dataLayer` with `link_url`, `product_name`, `product_category`, `page_path`)
 - Lightbox for product photo galleries (any `.product-card`'s `.gallery-item` buttons, scoped per-card); moves focus in, traps Tab, returns focus on close
 - Cookie consent banner (LGPD): every page's `<head>` sets Google Consent Mode v2 defaults *before* the GTM snippet (denied unless `localStorage["mipri-consent"] === "granted"`); `main.js` injects the banner while no choice is saved and sends `gtag('consent','update',…)`. Any `[data-cookie-settings]` button reopens it (used on `privacidade.html`). New pages must copy that consent `<script>` above GTM.
