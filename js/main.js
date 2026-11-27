@@ -401,8 +401,19 @@
   function readConsent() {
     try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; }
   }
+  // O GTM também carrega o Microsoft Clarity, que não lê o Consent Mode do
+  // Google sozinho. A fila abaixo é a mesma do snippet oficial do Clarity:
+  // os comandos esperam o script carregar. Sem consentimento ele funciona
+  // sem cookies.
+  window.clarity = window.clarity || function () {
+    (window.clarity.q = window.clarity.q || []).push(arguments);
+  };
+  function clarityConsent(value) {
+    window.clarity("consentv2", { ad_Storage: value, analytics_Storage: value });
+  }
   function saveConsent(value) {
     try { localStorage.setItem(CONSENT_KEY, value); } catch (e) {}
+    clarityConsent(value);
     if (typeof window.gtag === "function") {
       window.gtag("consent", "update", {
         ad_storage: value,
@@ -435,6 +446,7 @@
     document.body.appendChild(banner);
   }
   var savedConsent = readConsent();
+  clarityConsent(savedConsent === "granted" ? "granted" : "denied");
   if (savedConsent !== "granted" && savedConsent !== "denied") showCookieBanner();
   // Botões "Alterar preferências de cookies" (página de privacidade).
   document.querySelectorAll("[data-cookie-settings]").forEach(function (btn) {
