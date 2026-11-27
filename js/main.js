@@ -13,8 +13,11 @@
       navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
     });
 
-    // Dropdown toggle on mobile (tap "Serviços" to expand submenu)
+    // Dropdown toggle on mobile (tap "Serviços" to expand submenu; o segundo
+    // toque abre a página /servicos)
     document.querySelectorAll(".has-dropdown > a").forEach(function (link) {
+      link.setAttribute("aria-haspopup", "true");
+      link.setAttribute("aria-expanded", "false");
       link.addEventListener("click", function (e) {
         if (window.innerWidth <= 860) {
           var parent = link.parentElement;
@@ -25,6 +28,7 @@
               el.classList.remove("open");
             });
             parent.classList.add("open");
+            link.setAttribute("aria-expanded", "true");
           }
         }
       });
@@ -240,7 +244,15 @@
   document.querySelectorAll('a[href*="wa.me"], a[href*="whatsapp"]').forEach(function (link) {
     link.addEventListener("click", function () {
       if (window.dataLayer) {
-        window.dataLayer.push({ event: "whatsapp_click", link_url: link.href });
+        var card = link.closest(".product-card");
+        var titleEl = card && card.querySelector(".product-card-title");
+        window.dataLayer.push({
+          event: "whatsapp_click",
+          link_url: link.href,
+          product_name: titleEl ? titleEl.textContent.trim() : "",
+          product_category: card ? (card.getAttribute("data-category") || (window.location.pathname.match(/\/servicos\/([^\/.]+)/) || [])[1] || "") : "",
+          page_path: window.location.pathname
+        });
       }
     });
   });
@@ -255,6 +267,7 @@
     var lightboxCounter = lightbox.querySelector(".lightbox-counter");
     var activeItems = [];
     var lightboxIndex = 0;
+    var lastFocused = null;
 
     function showLightbox(index) {
       lightboxIndex = (index + activeItems.length) % activeItems.length;
@@ -272,12 +285,17 @@
       lightbox.classList.add("open");
       lightbox.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
+      // Leva o foco para dentro do lightbox (e devolve ao fechar).
+      lastFocused = document.activeElement;
+      var closeEl = lightbox.querySelector(".lightbox-close");
+      if (closeEl) closeEl.focus();
     }
 
     function closeLightbox() {
       lightbox.classList.remove("open");
       lightbox.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
+      if (lastFocused && lastFocused.focus) lastFocused.focus();
     }
 
     productCards.forEach(function (card) {
@@ -301,6 +319,19 @@
     document.addEventListener("keydown", function (e) {
       if (!lightbox.classList.contains("open")) return;
       if (e.key === "Escape") closeLightbox();
+      // Prende o Tab dentro do lightbox enquanto ele está aberto.
+      if (e.key === "Tab") {
+        var focusables = Array.prototype.filter.call(
+          lightbox.querySelectorAll("button"),
+          function (el) { return el.offsetParent !== null; }
+        );
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (!lightbox.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
       if (e.key === "ArrowLeft") showLightbox(lightboxIndex - 1);
       if (e.key === "ArrowRight") showLightbox(lightboxIndex + 1);
     });
@@ -333,8 +364,11 @@
       var visibleCount = 0;
       cards.forEach(function (card) {
         var matchesCategory = !categoryNav || activeCategory === "todos" || card.getAttribute("data-category") === activeCategory;
+        // Busca no título e nas especificações do produto.
         var titleEl = card.querySelector(".product-card-title");
-        var matchesSearch = !query || (titleEl && normalizeText(titleEl.textContent).indexOf(query) !== -1);
+        var specsEl = card.querySelector(".product-specs");
+        var haystack = (titleEl ? titleEl.textContent : "") + " " + (specsEl ? specsEl.textContent : "");
+        var matchesSearch = !query || normalizeText(haystack).indexOf(query) !== -1;
         var show = matchesCategory && matchesSearch;
         card.style.display = show ? "" : "none";
         if (show) visibleCount++;
@@ -358,6 +392,54 @@
       searchInput.addEventListener("input", applyFilters);
     }
   }
+
+  /* ---------- Aviso de cookies (LGPD + Google Consent Mode v2) ---------- */
+  // O <head> de cada página já define tudo como "negado" antes do GTM
+  // carregar (ou "concedido", se o visitante aceitou antes). Aqui só mostramos
+  // o aviso enquanto não houver escolha salva, e atualizamos o consentimento.
+  var CONSENT_KEY = "mipri-consent";
+  function readConsent() {
+    try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; }
+  }
+  function saveConsent(value) {
+    try { localStorage.setItem(CONSENT_KEY, value); } catch (e) {}
+    if (typeof window.gtag === "function") {
+      window.gtag("consent", "update", {
+        ad_storage: value,
+        ad_user_data: value,
+        ad_personalization: value,
+        analytics_storage: value
+      });
+    }
+    if (window.dataLayer) window.dataLayer.push({ event: "cookie_consent_" + value });
+  }
+  function showCookieBanner() {
+    if (document.querySelector(".cookie-banner")) return;
+    var banner = document.createElement("div");
+    banner.className = "cookie-banner";
+    banner.setAttribute("role", "region");
+    banner.setAttribute("aria-label", "Aviso de cookies");
+    banner.innerHTML =
+      '<p>Usamos cookies para entender como o site é usado e melhorar o atendimento. ' +
+      'Você pode aceitar ou recusar. Saiba mais na <a href="/privacidade">Política de privacidade</a>.</p>' +
+      '<div class="cookie-banner-actions">' +
+      '<button type="button" class="btn btn-cookie-reject" data-consent="denied">Recusar</button>' +
+      '<button type="button" class="btn btn-cookie-accept" data-consent="granted">Aceitar</button>' +
+      "</div>";
+    banner.querySelectorAll("[data-consent]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        saveConsent(btn.getAttribute("data-consent"));
+        banner.parentNode.removeChild(banner);
+      });
+    });
+    document.body.appendChild(banner);
+  }
+  var savedConsent = readConsent();
+  if (savedConsent !== "granted" && savedConsent !== "denied") showCookieBanner();
+  // Botões "Alterar preferências de cookies" (página de privacidade).
+  document.querySelectorAll("[data-cookie-settings]").forEach(function (btn) {
+    btn.addEventListener("click", showCookieBanner);
+  });
 
   /* ---------- Voltar ao topo ---------- */
   // A rolagem suave até #top é feita pelo CSS (html{scroll-behavior:smooth}).
